@@ -10,7 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersService {
 
   constructor(
-    @InjectModel(User.name) 
+    @InjectModel(User.name)
     private userModel: Model<User>
   ) { }
 
@@ -21,7 +21,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const {name, email, password} = createUserDto
+    const { name, email, password } = createUserDto
     const hashPassword = this.getHashPassword(password)
     const newUser = await this.userModel.create({
       name, password: hashPassword, email
@@ -34,16 +34,16 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    if(!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.find({_id: id})
+    if (!Types.ObjectId.isValid(id)) return 'Not found user!'
+    const newUser = await this.userModel.find({ _id: id })
     return newUser
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto) {
+    return await this.userModel.updateOne({ _id: updateUserDto._id }, { ...updateUserDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    return this.userModel.deleteOne({ _id: id });
   }
 }

@@ -11,6 +11,13 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector));
 
+  //config cors
+  app.enableCors({
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+    "preflightContinue": false,
+  });
+  //
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(configService.get('PORT'));
 }

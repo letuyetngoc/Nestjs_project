@@ -10,6 +10,7 @@ import { CompaniesModule } from './companies/companies.module';
 
 @Module({
   imports: [
+    //use config service to config other module
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -21,9 +22,14 @@ import { CompaniesModule } from './companies/companies.module';
       }),
       inject: [ConfigService],
     }),
+    //
+
+    //Use ConfigModule globally
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    //
+    
     UsersModule,
     AuthModule,
     CompaniesModule,

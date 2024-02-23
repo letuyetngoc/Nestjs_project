@@ -54,11 +54,12 @@ export class UsersService {
     return compareSync(password, hash);
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    return await this.userModel.updateOne({ _id: updateUserDto._id }, { ...updateUserDto });
+  async update(updateUserDto: UpdateUserDto, user: IUser) {
+    return await this.userModel.updateOne({ _id: updateUserDto._id }, { ...updateUserDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: IUser) {
+    await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
   }
 }

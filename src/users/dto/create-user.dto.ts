@@ -58,7 +58,4 @@ export class RegisterUserDTO {
 
     @IsNotEmpty({ message: 'Adress không được để trống' })
     address: string
-
-    @IsNotEmpty({ message: 'Role không được để trống' })
-    role: string
 }

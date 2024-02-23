@@ -7,6 +7,7 @@ import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from './schemas/user.interface';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class UsersService {
@@ -34,14 +35,35 @@ export class UsersService {
     return { _id: newUser._id, createdAt: newUser.createdAt }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort } = aqp(qs);
+    delete filter.page
+
+    const totalItems = (await this.userModel.find(filter)).length
+    const defaultLimit = limit ? limit : 10
+    const totalPage = Math.ceil(totalItems / defaultLimit)
+    const offset = (currentPage - 1) * defaultLimit
+
+    const result = await this.userModel.find(filter).select('-password')
+      .skip(offset)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .exec()
+      
+    return {
+      meta: {
+        current: currentPage,
+        pageSize: defaultLimit,
+        total: totalPage
+      },
+      result
+    }
   }
 
   async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.find({ _id: id })
-    return newUser
+    const newUser = await this.userModel.find({ _id: id }).select('-password')
+    return newUser[0]
   }
 
   findOneByUsername(username: string) {

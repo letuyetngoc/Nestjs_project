@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { IUser } from './schemas/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -21,19 +22,16 @@ export class UsersService {
     return hash
   }
 
-  async create(createUserDto: CreateUserDto) {
-    const { name, email, password } = createUserDto
-    const hashPassword = this.getHashPassword(password)
-    const newUser = await this.userModel.create({
-      name, password: hashPassword, email
-    })
-    return newUser
+  async create(createUserDto: CreateUserDto, user: IUser) {
+    const hashPassword = this.getHashPassword(createUserDto.password)
+    const newUser = await this.userModel.create({ ...createUserDto, password: hashPassword, createdBy: { _id: user._id, email: user.email } })
+    return { _id: newUser._id, createdAt: newUser.createdAt }
   }
 
   async register(registerUserDTO: RegisterUserDTO) {
     const hashPassword = this.getHashPassword(registerUserDTO.password)
     const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
-    return {_id: newUser._id, createdAt:newUser.createdAt}
+    return { _id: newUser._id, createdAt: newUser.createdAt }
   }
 
   findAll() {
@@ -52,7 +50,7 @@ export class UsersService {
     })
   }
 
-  isValidPassword(password:string, hash:string) {
+  isValidPassword(password: string, hash: string) {
     return compareSync(password, hash);
   }
 

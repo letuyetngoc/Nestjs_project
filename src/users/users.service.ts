@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
+import { IUser } from './schemas/user.interface';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class UsersService {
@@ -21,22 +23,60 @@ export class UsersService {
     return hash
   }
 
-  async create(createUserDto: CreateUserDto) {
-    const { name, email, password } = createUserDto
-    const hashPassword = this.getHashPassword(password)
-    const newUser = await this.userModel.create({
-      name, password: hashPassword, email
-    })
+  async create(createUserDto: CreateUserDto, user: IUser) {
+    //add logic check email
+    const isExist = await this.userModel.findOne({ email: createUserDto.email })
+    if (isExist) {
+      throw new BadRequestException("Email already exists!")
+    }
+    //
+    const hashPassword = this.getHashPassword(createUserDto.password)
+    const newUser = await this.userModel.create({ ...createUserDto, password: hashPassword, createdBy: { _id: user._id, email: user.email } })
     return newUser
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async register(registerUserDTO: RegisterUserDTO) {
+    //add logic check email
+    const isExist = await this.userModel.findOne({ email: registerUserDTO.email })
+    if (isExist) {
+      throw new BadRequestException("Email already exists!")
+    }
+    //
+    const hashPassword = this.getHashPassword(registerUserDTO.password)
+    const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
+    return newUser
+  }
+
+  async findAll(currentPage: number, limit: number, qs: string) {
+    const { filter, sort } = aqp(qs);
+    delete filter.current
+    delete filter.pageSize
+
+    const totalItems = (await this.userModel.find(filter)).length
+    const defaultLimit = limit ? limit : 10
+    const totalPage = Math.ceil(totalItems / defaultLimit)
+    const offset = (currentPage - 1) * defaultLimit
+
+    const result = await this.userModel.find(filter).select('-password')
+      .skip(offset)
+      .limit(defaultLimit)
+      .sort(sort as any)
+      .exec()
+
+    return {
+      meta: {
+        current: currentPage,
+        pageSize: defaultLimit,
+        pages: totalPage,
+        total: totalItems
+      },
+      result
+    }
   }
 
   async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.find({ _id: id })
+    const newUser = await this.userModel.findOne({ _id: id }).select('-password')
     return newUser
   }
 
@@ -46,15 +86,26 @@ export class UsersService {
     })
   }
 
-  isValidPassword(password:string, hash:string) {
+  isValidPassword(password: string, hash: string) {
     return compareSync(password, hash);
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    return await this.userModel.updateOne({ _id: updateUserDto._id }, { ...updateUserDto });
+  async update(updateUserDto: UpdateUserDto, user: IUser) {
+    return await this.userModel.updateOne({ _id: updateUserDto._id }, { ...updateUserDto, updatedBy: { _id: user._id, email: user.email } });
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
+    await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
+  }
+
+  async updateUserToken(refreshToken: string, _id: string) {
+    return await this.userModel.updateOne({ _id }, { refreshToken })
+  }
+
+  async findUserByRefreshToken(refreshToken: string) {
+    const user = await this.userModel.findOne({ refreshToken })
+    return user
   }
 }

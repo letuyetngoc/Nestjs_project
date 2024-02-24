@@ -66,7 +66,8 @@ export class UsersService {
       meta: {
         current: currentPage,
         pageSize: defaultLimit,
-        total: totalPage
+        pages: totalPage,
+        total: totalItems
       },
       result
     }

@@ -33,10 +33,11 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Patch()
   @ResponseMessage('Update user success!')
-  update(@Body() updateUserDto: UpdateUserDto, @User() user: IUser) {
-    return this.usersService.update(updateUserDto, user);
+  @Patch()
+  async update(@Body() updateUserDto: UpdateUserDto, @User() user: IUser) {
+    const userUpdated = await this.usersService.update(updateUserDto, user);
+    return userUpdated
   }
 
   @Delete(':id')

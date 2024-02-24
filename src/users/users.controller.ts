@@ -11,8 +11,9 @@ export class UsersController {
 
   @Post()
   @ResponseMessage('Create user success!')
-  create(@Body() createUserDto: CreateUserDto, @User() user: IUser) {
-    return this.usersService.create(createUserDto, user);
+  async create(@Body() createUserDto: CreateUserDto, @User() user: IUser) {
+    const newUser = await this.usersService.create(createUserDto, user);
+    return { _id: newUser?._id, createdAt: newUser?.createdAt }
   }
 
   @Get()

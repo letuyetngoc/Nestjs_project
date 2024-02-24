@@ -24,19 +24,25 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto, user: IUser) {
-    const hashPassword = this.getHashPassword(createUserDto.password)
-    const newUser = await this.userModel.create({ ...createUserDto, password: hashPassword, createdBy: { _id: user._id, email: user.email } })
-    return { _id: newUser._id, createdAt: newUser.createdAt }
-  }
-
-  async register(registerUserDTO: RegisterUserDTO) {
-    const hashPassword = this.getHashPassword(registerUserDTO.password)
     //add logic check email
-    const isExist = await this.userModel.findOne({ email: registerUserDTO.email })
-    if(isExist){
+    const isExist = await this.userModel.findOne({ email: createUserDto.email })
+    if (isExist) {
       throw new BadRequestException("Email already exists!")
     }
     //
+    const hashPassword = this.getHashPassword(createUserDto.password)
+    const newUser = await this.userModel.create({ ...createUserDto, password: hashPassword, createdBy: { _id: user._id, email: user.email } })
+    return newUser
+  }
+
+  async register(registerUserDTO: RegisterUserDTO) {
+    //add logic check email
+    const isExist = await this.userModel.findOne({ email: registerUserDTO.email })
+    if (isExist) {
+      throw new BadRequestException("Email already exists!")
+    }
+    //
+    const hashPassword = this.getHashPassword(registerUserDTO.password)
     const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
     return newUser
   }
@@ -55,7 +61,7 @@ export class UsersService {
       .limit(defaultLimit)
       .sort(sort as any)
       .exec()
-      
+
     return {
       meta: {
         current: currentPage,

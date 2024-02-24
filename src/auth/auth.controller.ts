@@ -1,10 +1,10 @@
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public, ResponseMessage, User } from 'src/decorator/customize';
 import { LocalAuthGuard } from './local-auth.guard';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterUserDTO } from 'src/users/dto/create-user.dto';
 import { IUser } from 'src/users/schemas/user.interface';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -16,8 +16,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @ResponseMessage('Login success!')
   @Post('/login')
-  async login(@User() user:IUser) {
-    return this.authService.login(user);
+  async login(@User() user:IUser, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(user, response);
   }
 
   @Public()

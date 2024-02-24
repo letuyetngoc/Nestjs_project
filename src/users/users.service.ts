@@ -98,4 +98,8 @@ export class UsersService {
     await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
   }
+
+  async updateUserToken(refreshToken: string, _id: string) {
+    return await this.userModel.updateOne({ _id }, { refreshToken })
+  }
 }

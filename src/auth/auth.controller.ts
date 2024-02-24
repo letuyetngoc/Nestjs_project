@@ -1,10 +1,10 @@
-import { Controller, Post, UseGuards, Body, Res, Get } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Res, Get, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public, ResponseMessage, User } from 'src/decorator/customize';
 import { LocalAuthGuard } from './local-auth.guard';
 import { RegisterUserDTO } from 'src/users/dto/create-user.dto';
 import { IUser } from 'src/users/schemas/user.interface';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +16,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @ResponseMessage('Login success!')
   @Post('/login')
-  async login(@User() user:IUser, @Res({ passthrough: true }) response: Response) {
+  async login(@User() user: IUser, @Res({ passthrough: true }) response: Response) {
     return this.authService.login(user, response);
   }
 
@@ -29,8 +29,18 @@ export class AuthController {
 
   @Get('/account')
   @ResponseMessage('Get user infomation')
-  getInfoUser(@User() user: IUser){
+  getInfoUser(@User() user: IUser) {
     return user
+  }
+
+  @Public()
+  @Get('/refresh')
+  @ResponseMessage('Get User by refresh token')
+  handleRefreshToken(
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request
+  ) {
+    return this.authService.handleRefreshToken(request, response)
   }
 
 }

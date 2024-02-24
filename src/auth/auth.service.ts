@@ -43,7 +43,8 @@ export class AuthService {
     }
 
     async register(registerUserDTO: RegisterUserDTO) {
-        return this.usersService.register(registerUserDTO)
+        const newUser = await this.usersService.register(registerUserDTO)
+        return { _id: newUser._id, createdAt: newUser.createdAt }
     }
 
 }

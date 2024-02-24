@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
@@ -31,8 +31,14 @@ export class UsersService {
 
   async register(registerUserDTO: RegisterUserDTO) {
     const hashPassword = this.getHashPassword(registerUserDTO.password)
+    //add logic check email
+    const isExist = await this.userModel.findOne({ email: registerUserDTO.email })
+    if(isExist){
+      throw new BadRequestException("Email already exists!")
+    }
+    //
     const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
-    return { _id: newUser._id, createdAt: newUser.createdAt }
+    return newUser
   }
 
   async findAll(currentPage: number, limit: number, qs: string) {

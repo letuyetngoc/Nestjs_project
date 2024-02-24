@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -93,6 +93,7 @@ export class UsersService {
   }
 
   async remove(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
     await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
   }

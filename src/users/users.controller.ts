@@ -40,9 +40,9 @@ export class UsersController {
     return userUpdated
   }
 
-  @Delete(':id')
   @ResponseMessage('Delete user success!')
-  remove(@Param('id') id: string, @User() user: IUser) {
-    return this.usersService.remove(id, user);
+  @Delete(':id')
+  async remove(@Param('id') id: string, @User() user: IUser) {
+    return await this.usersService.remove(id, user);
   }
 }

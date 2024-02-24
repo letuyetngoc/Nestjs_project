@@ -119,4 +119,10 @@ export class AuthService {
             throw new BadRequestException("refresh_token is not valid. Please login again!")
         }
     }
+
+    async logout(user: IUser, response: Response) {
+        await this.usersService.updateUserToken(null, user._id)
+        response.clearCookie('refresh_token')
+        return 'ok'
+    }
 }

@@ -19,8 +19,8 @@ export class UsersController {
   @Get()
   @ResponseMessage('Get user success!')
   findAll(
-    @Query("page") page: string,
-    @Query("limit") limit: string,
+    @Query("current") page: string,
+    @Query("pageSize") limit: string,
     @Query() qs: string
   ) {
     return this.usersService.findAll(+page, +limit, qs);

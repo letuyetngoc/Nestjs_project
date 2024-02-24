@@ -29,8 +29,8 @@ export class UsersController {
   @Public()
   @Get(':id')
   @ResponseMessage('Get user success!')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.usersService.findOne(id);
   }
 
   @ResponseMessage('Update user success!')

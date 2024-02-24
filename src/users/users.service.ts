@@ -74,8 +74,8 @@ export class UsersService {
 
   async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.find({ _id: id }).select('-password')
-    return newUser[0]
+    const newUser = await this.userModel.findOne({ _id: id }).select('-password')
+    return newUser
   }
 
   findOneByUsername(username: string) {

@@ -43,8 +43,8 @@ export class AuthService {
         await this.usersService.updateUserToken(refresh_token, _id)
 
         //set refresh_token with cookie
-        response.cookie('refresh_token', refresh_token,{
-            httpOnly:true,
+        response.cookie('refresh_token', refresh_token, {
+            httpOnly: true,
             maxAge: ms(this.configService.get<string>('JWT_REFRESH_EXPIRE'))
         })
         return {

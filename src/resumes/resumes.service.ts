@@ -40,7 +40,7 @@ export class ResumesService {
 
     //fetch all resumes with pagination
     async getAllResumes(current: number, pageSize: number, qs: string) {
-        const { filter, sort } = aqp(qs);
+        const { filter, sort, population, projection } = aqp(qs);
         delete filter.current
         delete filter.pageSize
 
@@ -53,6 +53,8 @@ export class ResumesService {
             .skip(offset)
             .limit(defaultPageSize)
             .sort(sort as any)
+            .populate(population)
+            .select(projection)
             .exec()
 
         return {

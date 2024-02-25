@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Resume, ResumeDocument } from './schema/resume.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/schemas/user.interface';
 import aqp from 'api-query-params';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class ResumesService {
@@ -42,7 +43,7 @@ export class ResumesService {
         delete filter.pageSize
 
         const defaultPageSize = pageSize ? pageSize : 10
-        const totalItems = Math.ceil((await this.resumeModel.find(filter )).length)
+        const totalItems = Math.ceil((await this.resumeModel.find(filter)).length)
         const totalPages = Math.ceil(totalItems / defaultPageSize)
         const offset = (current - 1) * defaultPageSize
 
@@ -62,5 +63,13 @@ export class ResumesService {
             result
         }
 
+    }
+
+    //fetch resume by id
+    async getResumebyId(id: string) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('not found resume')
+        }
+        return await this.resumeModel.findById(id)
     }
 }

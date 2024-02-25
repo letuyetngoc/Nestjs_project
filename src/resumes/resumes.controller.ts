@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
 import { ResumesService } from './resumes.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { IUser } from 'src/users/schemas/user.interface';
@@ -26,5 +26,11 @@ export class ResumesController {
     @Query() qs: string
   ) {
     return await this.resumesService.getAllResumes(+current, +pageSize, qs);
+  }
+
+  @Get(':id')
+  @ResponseMessage('fetch resume by id')
+  async getResumebyId(@Param('id') id: string) {
+   return await this.resumesService.getResumebyId(id);
   }
 }

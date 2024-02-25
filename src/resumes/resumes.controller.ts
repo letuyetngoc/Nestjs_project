@@ -36,7 +36,7 @@ export class ResumesController {
   }
 
   @Patch(':id')
-  @ResponseMessage('fetch resume by id')
+  @ResponseMessage('update a resume')
   async updateResume(
     @Param('id') id: string,
     @Body() updateResumeDto: UpdateResumeDto,

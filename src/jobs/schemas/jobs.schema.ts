@@ -12,7 +12,7 @@ export class Job {
   skills: string[];
 
   @Prop({type: Object})
-  company: { _id: mongoose.Schema.Types.ObjectId, name: string };
+  company: { _id: mongoose.Schema.Types.ObjectId, name: string, logo:string };
 
   @Prop()
   location: string;

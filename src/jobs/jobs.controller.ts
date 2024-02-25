@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Patch, Delete, Param, Get, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobsDto } from './dto/create-jobs.dto';
-import { ResponseMessage, User } from 'src/decorator/customize';
+import { Public, ResponseMessage, User } from 'src/decorator/customize';
 import { IUser } from 'src/users/schemas/user.interface';
 import { UpdateJobrDto } from './dto/update-jobs.dto';
 
@@ -29,13 +29,15 @@ export class JobsController {
     return await this.jobsService.delete(id, user);
   }
 
+  @Public()
   @Get(':id')
   @ResponseMessage('Get a job')
   async getAJobById(@Param('id') id: string, @User() user: IUser) {
     return await this.jobsService.getAJobById(id, user);
   }
 
-  @Get('')
+  @Public()
+  @Get()
   @ResponseMessage('Get a job with pagination')
   async getJobsWithPagination(
     @Query('current') current: string,

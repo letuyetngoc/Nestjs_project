@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Delete, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Delete, Param, Get, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobsDto } from './dto/create-jobs.dto';
 import { ResponseMessage, User } from 'src/decorator/customize';
@@ -33,5 +33,15 @@ export class JobsController {
   @ResponseMessage('Get a job')
   async getAJobById(@Param('id') id: string, @User() user: IUser) {
     return await this.jobsService.getAJobById(id, user);
+  }
+
+  @Get('')
+  @ResponseMessage('Get a job with pagination')
+  async getJobsWithPagination(
+    @Query('current') current: string,
+    @Query('pageSize') pageSize: string,
+    @Query() qs: string,
+  ) {
+    return await this.jobsService.getJobsWithPagination(+current, +pageSize, qs);
   }
 }

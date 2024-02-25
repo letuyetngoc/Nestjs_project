@@ -6,6 +6,7 @@ import { CreateJobsDto } from './dto/create-jobs.dto';
 import { IUser } from 'src/users/schemas/user.interface';
 import { UpdateJobrDto } from './dto/update-jobs.dto';
 import mongoose from 'mongoose';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class JobsService {
@@ -34,5 +35,34 @@ export class JobsService {
   //get a job by id
   async getAJobById(id: string, user: IUser) {
     return this.jobModel.findOne({ _id: id })
+  }
+
+  //get jobs with pagination
+  async getJobsWithPagination(current: number, pageSize: number, qs: string) {
+    const { filter, sort } = aqp(qs)
+
+    delete filter.current
+    delete filter.pageSize
+
+    const defaultPageSize = pageSize ? pageSize : 10
+    const offset = (current - 1) * defaultPageSize
+    const totalPages = Math.ceil((await this.jobModel.find(filter)).length)
+    const totalItems = totalPages * defaultPageSize
+
+    const result = await this.jobModel.find(filter)
+      .skip(offset)
+      .limit(defaultPageSize)
+      .sort(sort as any)
+      .exec()
+
+    return {
+      meta: {
+        current,
+        pageSize,
+        pages: totalPages,
+        total: totalItems
+      },
+      result
+    }
   }
 }

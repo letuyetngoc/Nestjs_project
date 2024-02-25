@@ -28,7 +28,7 @@ export class JobsService {
   //delete a job
   async delete(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
-    // await this.jobModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
+    await this.jobModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.jobModel.softDelete({ _id: id });
   }
 

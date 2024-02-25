@@ -36,7 +36,7 @@ export class ResumesController {
   }
 
   @Patch(':id')
-  @ResponseMessage('update a resume')
+  @ResponseMessage('update status of resume')
   async updateResume(
     @Param('id') id: string,
     @Body() updateResumeDto: UpdateResumeDto,
@@ -54,6 +54,6 @@ export class ResumesController {
   @Post('by-user')
   @ResponseMessage('get CV by user')
   async getResumeByUser(@User() user: IUser) {
-    return await this.resumesService.getResumeByUser(user);
+    return await this.resumesService.getResumesByUser(user);
   }
 }

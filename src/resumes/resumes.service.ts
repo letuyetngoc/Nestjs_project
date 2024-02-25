@@ -18,6 +18,7 @@ export class ResumesService {
     // create a resume
     async create(createResumeDto: CreateResumeDto, user: IUser) {
         return await this.resumeModel.create({
+            ...createResumeDto,
             email: user.email,
             userId: user._id,
             status: 'PENDING',
@@ -44,7 +45,7 @@ export class ResumesService {
         delete filter.pageSize
 
         const defaultPageSize = pageSize ? pageSize : 10
-        const totalItems = Math.ceil((await this.resumeModel.find(filter)).length)
+        const totalItems = (await this.resumeModel.find(filter)).length
         const totalPages = Math.ceil(totalItems / defaultPageSize)
         const offset = (current - 1) * defaultPageSize
 
@@ -76,24 +77,24 @@ export class ResumesService {
 
     //update a resume
     async updateResume(id: string, updateResumeDto: UpdateResumeDto, user: IUser) {
-        const resume = await this.resumeModel.findById(id)
         return await this.resumeModel.updateOne({ _id: id }, {
             status: updateResumeDto.status,
             updatedAt: {
                 _id: user._id,
                 email: user.email
             },
-            history: [
-                ...resume.history,
-                {
-                    status: updateResumeDto.status,
-                    updatedAt: new Date,
-                    updatedBy: {
-                        _id: user._id,
-                        email: user.email
+            $push: {
+                history: [
+                    {
+                        status: updateResumeDto.status,
+                        updatedAt: new Date,
+                        updatedBy: {
+                            _id: user._id,
+                            email: user.email
+                        }
                     }
-                }
-            ]
+                ]
+            }
         })
     }
 
@@ -106,8 +107,8 @@ export class ResumesService {
         return this.resumeModel.softDelete({ _id: id })
     }
 
-    //get resume by user
-    getResumeByUser(user: IUser) {
-        return this.resumeModel.findOne({ userId: user._id })
+    //get all resume by user
+    getResumesByUser(user: IUser) {
+        return this.resumeModel.find({ userId: user._id })
     }
 }

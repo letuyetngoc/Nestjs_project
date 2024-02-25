@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Resume, ResumeDocument } from './schema/resume.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/schemas/user.interface';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class ResumesService {
@@ -19,13 +20,13 @@ export class ResumesService {
             userId: user._id,
             status: 'PENDING',
             history: [{
-                    status: "PENDING",
-                    updatedAt: new Date(),
-                    updatedBy: {
-                        _id: user._id,
-                        email: user.email
-                    }
-                }],
+                status: "PENDING",
+                updatedAt: new Date(),
+                updatedBy: {
+                    _id: user._id,
+                    email: user.email
+                }
+            }],
             createdBy: {
                 _id: user._id,
                 email: user.email
@@ -34,4 +35,32 @@ export class ResumesService {
         });
     }
 
+    //fetch all resumes with pagination
+    async getAllResumes(current: number, pageSize: number, qs: string) {
+        const { filter, sort } = aqp(qs);
+        delete filter.current
+        delete filter.pageSize
+
+        const defaultPageSize = pageSize ? pageSize : 10
+        const totalItems = Math.ceil((await this.resumeModel.find(filter )).length)
+        const totalPages = Math.ceil(totalItems / defaultPageSize)
+        const offset = (current - 1) * defaultPageSize
+
+        const result = await this.resumeModel.find(filter)
+            .skip(offset)
+            .limit(defaultPageSize)
+            .sort(sort as any)
+            .exec()
+
+        return {
+            meta: {
+                current,
+                pageSize,
+                pages: totalPages,
+                total: totalItems
+            },
+            result
+        }
+
+    }
 }

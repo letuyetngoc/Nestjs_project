@@ -6,6 +6,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/schemas/user.interface';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { UpdateResumeDto } from './dto/update-resume.dto';
 
 @Injectable()
 export class ResumesService {
@@ -71,5 +72,28 @@ export class ResumesService {
             throw new BadRequestException('not found resume')
         }
         return await this.resumeModel.findById(id)
+    }
+
+    //update a resume
+    async updateResume(id: string, updateResumeDto: UpdateResumeDto, user: IUser) {
+        const resume = await this.resumeModel.findById(id)
+        return await this.resumeModel.updateOne({ _id: id }, {
+            status: updateResumeDto.status,
+            updatedAt: {
+                _id: user._id,
+                email: user.email
+            },
+            history: [
+                ...resume.history,
+                {
+                    status: updateResumeDto.status,
+                    updatedAt: new Date,
+                    updatedBy: {
+                        _id: user._id,
+                        email: user.email
+                    }
+                }
+            ]
+        })
     }
 }

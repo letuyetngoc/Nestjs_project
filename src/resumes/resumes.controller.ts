@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Query, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Patch } from '@nestjs/common';
 import { ResumesService } from './resumes.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { IUser } from 'src/users/schemas/user.interface';
 import { ResponseMessage, User } from 'src/decorator/customize';
+import { UpdateResumeDto } from './dto/update-resume.dto';
 
 @Controller('resumes')
 export class ResumesController {
@@ -31,6 +32,16 @@ export class ResumesController {
   @Get(':id')
   @ResponseMessage('fetch resume by id')
   async getResumebyId(@Param('id') id: string) {
-   return await this.resumesService.getResumebyId(id);
+    return await this.resumesService.getResumebyId(id);
+  }
+
+  @Patch(':id')
+  @ResponseMessage('fetch resume by id')
+  async updateResume(
+    @Param('id') id: string,
+    @Body() updateResumeDto: UpdateResumeDto,
+    @User() user:IUser
+  ) {
+    return await this.resumesService.updateResume(id, updateResumeDto, user);
   }
 }

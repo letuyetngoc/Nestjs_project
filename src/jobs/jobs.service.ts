@@ -30,4 +30,9 @@ export class JobsService {
     // await this.jobModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.jobModel.softDelete({ _id: id });
   }
+
+  //get a job by id
+  async getAJobById(id: string, user: IUser) {
+    return this.jobModel.findOne({ _id: id })
+  }
 }

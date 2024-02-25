@@ -50,4 +50,10 @@ export class ResumesController {
   async deleteResume(@Param('id') id: string, @User() user:IUser) {
     return await this.resumesService.deleteResume(id, user);
   }
+
+  @Post('by-user')
+  @ResponseMessage('get CV by user')
+  async getResumeByUser(@User() user: IUser) {
+    return await this.resumesService.getResumeByUser(user);
+  }
 }

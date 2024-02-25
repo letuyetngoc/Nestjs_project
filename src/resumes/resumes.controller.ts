@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Patch, Delete } from '@nestjs/common';
 import { ResumesService } from './resumes.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { IUser } from 'src/users/schemas/user.interface';
@@ -43,5 +43,11 @@ export class ResumesController {
     @User() user:IUser
   ) {
     return await this.resumesService.updateResume(id, updateResumeDto, user);
+  }
+
+  @Delete(':id')
+  @ResponseMessage('delete a resume')
+  async deleteResume(@Param('id') id: string, @User() user:IUser) {
+    return await this.resumesService.deleteResume(id, user);
   }
 }

@@ -5,6 +5,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { CreateJobsDto } from './dto/create-jobs.dto';
 import { IUser } from 'src/users/schemas/user.interface';
 import { UpdateJobrDto } from './dto/update-jobs.dto';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class JobsService {
@@ -14,12 +15,19 @@ export class JobsService {
   ) { }
 
   //create a new job
-  create(createJobsDto: CreateJobsDto, user: IUser) {
-    return this.jobModel.create({ ...createJobsDto, isActive: true, createdBy: { _id: user._id, email: user.email } })
+  async create(createJobsDto: CreateJobsDto, user: IUser) {
+    return await this.jobModel.create({ ...createJobsDto, isActive: true, createdBy: { _id: user._id, email: user.email } })
   }
 
-  //update a new job
-  update(updateJobDto: UpdateJobrDto, user: IUser) {
-    return this.jobModel.updateOne({ _id: updateJobDto._id }, { ...updateJobDto, updatedBy: { _id: user._id, email: user.email } })
+  //update a job
+  async update(updateJobDto: UpdateJobrDto, user: IUser) {
+    return await this.jobModel.updateOne({ _id: updateJobDto._id }, { ...updateJobDto, updatedBy: { _id: user._id, email: user.email } })
+  }
+
+  //delete a job
+  async delete(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
+    // await this.jobModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
+    return this.jobModel.softDelete({ _id: id });
   }
 }

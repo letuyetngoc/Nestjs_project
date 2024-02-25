@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Delete, Param } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobsDto } from './dto/create-jobs.dto';
 import { ResponseMessage, User } from 'src/decorator/customize';
@@ -21,5 +21,11 @@ export class JobsController {
   async update(@Body() updateJobDto: UpdateJobrDto, @User() user: IUser) {
     const jobUpdated = await this.jobsService.update(updateJobDto, user);
     return jobUpdated
+  }
+
+  @Delete(':id')
+  @ResponseMessage('Delete a job')
+  async delete(@Param('id') id: string, @User() user: IUser) {
+    return await this.jobsService.delete(id, user);
   }
 }

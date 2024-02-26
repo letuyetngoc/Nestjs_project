@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Query, Get } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { IUser } from 'src/users/schemas/user.interface';
@@ -22,6 +22,16 @@ export class PermissionsController {
     @Param() id: string,
     @User() user: IUser) {
     return this.permissionsService.update(updatePermissionDto, user, id);
+  }
+
+  @Get()
+  @ResponseMessage('Fetch Permission with paginate')
+  getAllPermissions(
+    @Query('current') current: number,
+    @Query('pageSize') pageSize: number,
+    @Query() qs:string
+  ) {
+    return this.permissionsService.getAllPermissions(+current, +pageSize, qs);
   }
 
 

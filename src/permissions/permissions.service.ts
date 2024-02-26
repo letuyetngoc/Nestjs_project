@@ -6,6 +6,7 @@ import { Permission, PermissionDocument } from './schema/permission.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/schemas/user.interface';
 import mongoose from 'mongoose';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class PermissionsService {
@@ -40,5 +41,36 @@ export class PermissionsService {
       throw new BadRequestException('not found permission')
     }
     return this.permissionModel.updateOne({ ...updatePermissionDto, updatedBy: { _id: user._id, email: user.email } })
+  }
+
+  //Fetch Permission with paginate
+  async getAllPermissions(current: number, pageSize: number, qs: string) {
+    const { filter, sort, projection, population } = aqp(qs)
+
+    delete filter.current
+    delete filter.pageSize
+
+    const defaultPageSize = pageSize ? pageSize : 10
+    const offset = (current - 1) * defaultPageSize
+    const totalPages = Math.ceil((await this.permissionModel.find(filter)).length)
+    const totalItems = totalPages * defaultPageSize
+
+    const result = await this.permissionModel.find(filter)
+      .skip(offset)
+      .limit(defaultPageSize)
+      .select(projection)
+      .populate(population)
+      .sort(sort as any)
+      .exec()
+
+    return {
+      meta: {
+        current,
+        pageSize,
+        pages: totalPages,
+        total: totalItems
+      },
+      result
+    }
   }
 }

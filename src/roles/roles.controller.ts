@@ -32,5 +32,11 @@ export class RolesController {
   ) {
     return this.rolesService.getAllRoles(+current, +pageSize, qs);
   }
+
+  @Get(':id')
+  @ResponseMessage('Fetch Role by ID')
+  getPermissionById(@Param('id') id: string) {
+    return this.rolesService.getRoleById(id);
+  }
   
 }

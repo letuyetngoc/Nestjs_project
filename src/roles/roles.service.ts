@@ -43,33 +43,41 @@ export class RolesService {
     }
 
     //Fetch Roles with paginate
-  async getAllRoles(current: number, pageSize: number, qs: string) {
-    const { filter, sort, projection, population } = aqp(qs)
+    async getAllRoles(current: number, pageSize: number, qs: string) {
+        const { filter, sort, projection, population } = aqp(qs)
 
-    delete filter.current
-    delete filter.pageSize
+        delete filter.current
+        delete filter.pageSize
 
-    const defaultPageSize = pageSize ? pageSize : 10
-    const offset = (current - 1) * defaultPageSize
-    const totalItems = (await this.roleModel.find(filter)).length
-    const totalPages = Math.ceil(totalItems / defaultPageSize)
+        const defaultPageSize = pageSize ? pageSize : 10
+        const offset = (current - 1) * defaultPageSize
+        const totalItems = (await this.roleModel.find(filter)).length
+        const totalPages = Math.ceil(totalItems / defaultPageSize)
 
-    const result = await this.roleModel.find(filter)
-      .skip(offset)
-      .limit(defaultPageSize)
-      .select(projection)
-      .populate(population)
-      .sort(sort as any)
-      .exec()
+        const result = await this.roleModel.find(filter)
+            .skip(offset)
+            .limit(defaultPageSize)
+            .select(projection)
+            .populate(population)
+            .sort(sort as any)
+            .exec()
 
-    return {
-      meta: {
-        current,
-        pageSize,
-        pages: totalPages,
-        total: totalItems
-      },
-      result
+        return {
+            meta: {
+                current,
+                pageSize,
+                pages: totalPages,
+                total: totalItems
+            },
+            result
+        }
     }
-  }
+
+    // Fetch Role by ID
+    async getRoleById(id: string) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('not found permission')
+        }
+        return this.roleModel.findById(id)
+    }
 }

@@ -22,7 +22,7 @@ import { join } from 'path';
           dir: join(__dirname + '/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
-            strict: true,
+            strict: configService.get<string>('EMAIL_AUTH_USER') === 'true' ? true : false,
           },
         },
         preview: true

@@ -18,13 +18,14 @@ import { join } from 'path';
             pass: configService.get<string>('EMAIL_AUTH_PASSWORD'),
           }
         },
-        // template: {
-        //   dir: join(__dirname + '/templates'),
-        //   adapter: new HandlebarsAdapter(),
-        //   options: {
-        //     strict: true,
-        //   },
-        // }
+        template: {
+          dir: join(__dirname + '/templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+        preview: true
       }),
       inject: [ConfigService],
     }),

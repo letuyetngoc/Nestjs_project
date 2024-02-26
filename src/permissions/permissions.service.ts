@@ -81,4 +81,13 @@ export class PermissionsService {
     }
     return this.permissionModel.findById(id)
   }
+
+  //delete a permission
+  async delete(id: string, user: IUser) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('not found permission')
+    }
+    await this.permissionModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
+    return this.permissionModel.deleteOne({_id: id})
+  }
 }

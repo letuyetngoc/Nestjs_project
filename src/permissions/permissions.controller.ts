@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Query, Get } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Query, Get, Delete } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { IUser } from 'src/users/schemas/user.interface';
@@ -38,6 +38,12 @@ export class PermissionsController {
   @ResponseMessage('Fetch Permission by ID')
   getPermissionById(@Param('id') id: string) {
     return this.permissionsService.getPermissionById(id);
+  }
+
+  @Delete(':id')
+  @ResponseMessage('Delete a Permission')
+  delete(@Param('id') id: string, @User() user: IUser) {
+    return this.permissionsService.delete(id, user);
   }
 
 

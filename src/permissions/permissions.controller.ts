@@ -29,9 +29,15 @@ export class PermissionsController {
   getAllPermissions(
     @Query('current') current: number,
     @Query('pageSize') pageSize: number,
-    @Query() qs:string
+    @Query() qs: string
   ) {
     return this.permissionsService.getAllPermissions(+current, +pageSize, qs);
+  }
+
+  @Get(':id')
+  @ResponseMessage('Fetch Permission by ID')
+  getPermissionById(@Param('id') id: string) {
+    return this.permissionsService.getPermissionById(id);
   }
 
 

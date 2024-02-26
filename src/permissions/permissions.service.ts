@@ -73,4 +73,12 @@ export class PermissionsService {
       result
     }
   }
+
+  // Fetch Permission by ID
+  async getPermissionById(id: string) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('not found permission')
+    }
+    return this.permissionModel.findById(id)
+  }
 }

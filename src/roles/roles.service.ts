@@ -15,13 +15,13 @@ export class RolesService {
         private roleModel: SoftDeleteModel<RoleDocument>
     ) { }
 
-    //create a permission
+    //create a role
     async create(createRoleDto: CreateRoleDto, user: IUser) {
-        const permissionExist = await this.roleModel.findOne({ name: createRoleDto.name })
-        if (permissionExist) {
+        const roleExist = await this.roleModel.findOne({ name: createRoleDto.name })
+        if (roleExist) {
             throw new BadRequestException("name role đã tồn tại")
         }
-        const newPermission = await this.roleModel.create({
+        const newRole = await this.roleModel.create({
             ...createRoleDto,
             createdBy: {
                 _id: user._id,
@@ -29,15 +29,15 @@ export class RolesService {
             }
         })
         return {
-            _id: newPermission._id,
-            createdAt: newPermission.createdAt
+            _id: newRole._id,
+            createdAt: newRole.createdAt
         }
     }
 
     //update a role
     async update(updateRoleDto: UpdateRoleDto, user: IUser, id: string) {
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            throw new BadRequestException('not found permission')
+            throw new BadRequestException('not found role')
         }
         return this.roleModel.updateOne({ ...updateRoleDto, updatedBy: { _id: user._id, email: user.email } })
     }
@@ -76,8 +76,17 @@ export class RolesService {
     // Fetch Role by ID
     async getRoleById(id: string) {
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            throw new BadRequestException('not found permission')
+            throw new BadRequestException('not found role')
         }
         return this.roleModel.findById(id)
+    }
+
+    //delete a role
+    async delete(id: string, user: IUser) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new BadRequestException('not found role')
+        }
+        await this.roleModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
+        return this.roleModel.deleteOne({ _id: id })
     }
 }

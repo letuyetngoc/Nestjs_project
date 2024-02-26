@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Query, Delete } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { ResponseMessage, User } from 'src/decorator/customize';
@@ -37,6 +37,12 @@ export class RolesController {
   @ResponseMessage('Fetch Role by ID')
   getPermissionById(@Param('id') id: string) {
     return this.rolesService.getRoleById(id);
+  }
+
+  @Delete(':id')
+  @ResponseMessage('Delete a role')
+  delete(@Param('id') id: string, @User() user: IUser) {
+    return this.rolesService.delete(id, user);
   }
   
 }

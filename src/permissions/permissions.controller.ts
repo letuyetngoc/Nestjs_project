@@ -45,7 +45,4 @@ export class PermissionsController {
   delete(@Param('id') id: string, @User() user: IUser) {
     return this.permissionsService.delete(id, user);
   }
-
-
-
 }

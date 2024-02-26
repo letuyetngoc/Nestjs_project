@@ -88,6 +88,6 @@ export class PermissionsService {
       throw new BadRequestException('not found permission')
     }
     await this.permissionModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
-    return this.permissionModel.deleteOne({_id: id})
+    return this.permissionModel.softDelete({_id: id})
   }
 }

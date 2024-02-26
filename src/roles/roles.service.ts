@@ -39,6 +39,10 @@ export class RolesService {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new BadRequestException('not found role')
         }
+        // const roleExist = await this.roleModel.findOne({ name: updateRoleDto.name })
+        // if (roleExist) {
+        //     throw new BadRequestException("name role đã tồn tại")
+        // }
         return this.roleModel.updateOne({ ...updateRoleDto, updatedBy: { _id: user._id, email: user.email } })
     }
 
@@ -78,7 +82,7 @@ export class RolesService {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new BadRequestException('not found role')
         }
-        return this.roleModel.findById(id)
+        return (await this.roleModel.findById(id)).populate({ path: 'permissions', select: { _id: 1, apiPath: 1, name: 1, method: 1, module: 1 } })
     }
 
     //delete a role
@@ -86,7 +90,11 @@ export class RolesService {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             throw new BadRequestException('not found role')
         }
+        const foundUser = await this.roleModel.findById(id)
+        if (foundUser.name === 'admin') {
+            throw new BadRequestException('Không thể xoá role admin admin!')
+        }
         await this.roleModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
-        return this.roleModel.deleteOne({ _id: id })
+        return this.roleModel.softDelete({ _id: id })
     }
 }

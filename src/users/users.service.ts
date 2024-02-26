@@ -76,14 +76,14 @@ export class UsersService {
 
   async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.findOne({ _id: id }).select('-password')
+    const newUser = (await this.userModel.findOne({ _id: id }).select('-password')).populate({ path: 'role', select: { _id: 1, name: 1 } })
     return newUser
   }
 
   findOneByUsername(username: string) {
     return this.userModel.findOne({
       email: username
-    })
+    }).populate({ path: 'role', select: { name: 1, permission: 1 } })
   }
 
   isValidPassword(password: string, hash: string) {
@@ -96,6 +96,12 @@ export class UsersService {
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
+
+    const foundUser = await this.userModel.findById(id)
+    if (foundUser.email === 'admin@gmail.com') {
+      throw new BadRequestException('Không thể xoá tài khoảng admin!')
+    }
+
     await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
   }

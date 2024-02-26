@@ -8,13 +8,17 @@ import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from './schemas/user.interface';
 import aqp from 'api-query-params';
+import { Role, RoleDocument } from 'src/roles/schema/role.schema';
+import { USER_ROLE } from 'src/databases/sample';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     @InjectModel(User.name)
-    private userModel: SoftDeleteModel<UserDocument>
+    private userModel: SoftDeleteModel<UserDocument>,
+    @InjectModel(Role.name)
+    private roleModel: SoftDeleteModel<RoleDocument>,
   ) { }
 
   getHashPassword = (password: string) => {
@@ -42,8 +46,12 @@ export class UsersService {
       throw new BadRequestException("Email already exists!")
     }
     //
+
+    //fetch user role
+    const userRole = await this.roleModel.findOne({ name: USER_ROLE })
+
     const hashPassword = this.getHashPassword(registerUserDTO.password)
-    const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
+    const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: userRole._id })
     return newUser
   }
 
@@ -76,14 +84,14 @@ export class UsersService {
 
   async findOne(id: string) {
     if (!Types.ObjectId.isValid(id)) return 'Not found user!'
-    const newUser = await this.userModel.findOne({ _id: id }).select('-password')
+    const newUser = (await this.userModel.findOne({ _id: id }).select('-password')).populate({ path: 'role', select: { _id: 1, name: 1 } })
     return newUser
   }
 
   findOneByUsername(username: string) {
     return this.userModel.findOne({
       email: username
-    })
+    }).populate({ path: 'role', select: { name: 1 } })
   }
 
   isValidPassword(password: string, hash: string) {
@@ -96,6 +104,12 @@ export class UsersService {
 
   async remove(id: string, user: IUser) {
     if (!mongoose.Types.ObjectId.isValid(id)) return 'not found user'
+
+    const foundUser = await this.userModel.findById(id)
+    if (foundUser.email === 'admin@gmail.com') {
+      throw new BadRequestException('Không thể xoá tài khoảng admin!')
+    }
+
     await this.userModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.userModel.softDelete({ _id: id });
   }
@@ -105,7 +119,10 @@ export class UsersService {
   }
 
   async findUserByRefreshToken(refreshToken: string) {
-    const user = await this.userModel.findOne({ refreshToken })
+    const user = (await this.userModel.findOne({ refreshToken })).populate({
+      path: 'role',
+      select: { name: 1 }
+    })
     return user
   }
 }

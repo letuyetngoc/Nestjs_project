@@ -46,8 +46,8 @@ export class JobsService {
 
     const defaultPageSize = pageSize ? pageSize : 10
     const offset = (current - 1) * defaultPageSize
-    const totalPages = Math.ceil((await this.jobModel.find(filter)).length)
-    const totalItems = totalPages * defaultPageSize
+    const totalItems = (await this.jobModel.find(filter)).length
+    const totalPages = Math.ceil(totalItems / defaultPageSize)
 
     const result = await this.jobModel.find(filter)
       .skip(offset)

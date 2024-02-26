@@ -6,13 +6,15 @@ import { RegisterUserDTO } from 'src/users/dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 import { Response, Request } from 'express';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private rolesService: RolesService
     ) { }
 
     //username và pass là 2 tham số thư viện passport ném về
@@ -21,14 +23,19 @@ export class AuthService {
         if (user) {
             const isValidPassword = this.usersService.isValidPassword(pass, user.password)
             if (isValidPassword) {
-                return user;
+                const userRole = user.role as unknown as { _id: string, name: string }
+                const temp = await this.rolesService.getRoleById(userRole._id)
+                return {
+                    ...user.toObject(),
+                    permissions: temp?.permissions || []
+                };
             }
         }
         return null;
     }
 
     async login(user: IUser, response: Response) {
-        const { _id, name, email, role } = user;
+        const { _id, name, email, role, permissions } = user;
         const payload = {
             sub: "token login",
             iss: "from server",
@@ -53,7 +60,8 @@ export class AuthService {
                 _id,
                 name,
                 email,
-                role
+                role,
+                permissions
             }
         };
     }
@@ -95,6 +103,10 @@ export class AuthService {
                 };
                 const refresh_token = this.createRefreshToken(payload)
 
+                //fetch user'role
+                const userRole = user.role as unknown as { _id: string, name: string }
+                const temp = await this.rolesService.getRoleById(userRole._id)
+
                 // update user with refresh token
                 await this.usersService.updateUserToken(refresh_token, _id.toString())
 
@@ -109,7 +121,8 @@ export class AuthService {
                         _id,
                         name,
                         email,
-                        role
+                        role,
+                        permissions: temp?.permissions ?? []
                     }
                 };
             } else {

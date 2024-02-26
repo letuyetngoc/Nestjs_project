@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Query } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { ResponseMessage, User } from 'src/decorator/customize';
@@ -21,6 +21,16 @@ export class RolesController {
     @Param() id: string,
     @User() user: IUser) {
     return this.rolesService.update(updateRolesDto, user, id);
+  }
+
+  @Get()
+  @ResponseMessage('Fetch Roles with paginate')
+  getAllPermissions(
+    @Query('current') current: number,
+    @Query('pageSize') pageSize: number,
+    @Query() qs: string
+  ) {
+    return this.rolesService.getAllRoles(+current, +pageSize, qs);
   }
   
 }

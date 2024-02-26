@@ -6,6 +6,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from 'src/users/schemas/user.interface';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import mongoose from 'mongoose';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class RolesService {
@@ -40,4 +41,35 @@ export class RolesService {
         }
         return this.roleModel.updateOne({ ...updateRoleDto, updatedBy: { _id: user._id, email: user.email } })
     }
+
+    //Fetch Roles with paginate
+  async getAllRoles(current: number, pageSize: number, qs: string) {
+    const { filter, sort, projection, population } = aqp(qs)
+
+    delete filter.current
+    delete filter.pageSize
+
+    const defaultPageSize = pageSize ? pageSize : 10
+    const offset = (current - 1) * defaultPageSize
+    const totalItems = (await this.roleModel.find(filter)).length
+    const totalPages = Math.ceil(totalItems / defaultPageSize)
+
+    const result = await this.roleModel.find(filter)
+      .skip(offset)
+      .limit(defaultPageSize)
+      .select(projection)
+      .populate(population)
+      .sort(sort as any)
+      .exec()
+
+    return {
+      meta: {
+        current,
+        pageSize,
+        pages: totalPages,
+        total: totalItems
+      },
+      result
+    }
+  }
 }

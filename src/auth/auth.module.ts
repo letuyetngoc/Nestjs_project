@@ -8,20 +8,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './passport/jwt.strategy';
 import ms from 'ms';
 import { AuthController } from './auth.controller';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
-  imports: [UsersModule, PassportModule,
+  imports: [UsersModule, PassportModule, RolesModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-        signOptions: {
-          expiresIn: ms(configService.get<string>('JWT_ACCESS_EXPIRE'))/1000,
-          //why /1000? ---- explain: ms ---> unit: ms; jwt: unit: s
-        },
-      }),
-      inject: [ConfigService],
+    imports: [ConfigModule],
+    useFactory: async (configService: ConfigService) => ({
+      secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+      signOptions: {
+        expiresIn: ms(configService.get<string>('JWT_ACCESS_EXPIRE')) / 1000,
+        //why /1000? ---- explain: ms ---> unit: ms; jwt: unit: s
+      },
     }),
+    inject: [ConfigService],
+  }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],

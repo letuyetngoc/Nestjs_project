@@ -7,6 +7,7 @@ import { IUser } from 'src/users/schemas/user.interface';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import mongoose from 'mongoose';
 import aqp from 'api-query-params';
+import { ADMIN_ROLE } from 'src/databases/sample';
 
 @Injectable()
 export class RolesService {
@@ -91,7 +92,7 @@ export class RolesService {
             throw new BadRequestException('not found role')
         }
         const foundUser = await this.roleModel.findById(id)
-        if (foundUser.name === 'admin') {
+        if (foundUser.name === ADMIN_ROLE) {
             throw new BadRequestException('Không thể xoá role admin admin!')
         }
         await this.roleModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })

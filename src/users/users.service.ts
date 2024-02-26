@@ -8,13 +8,17 @@ import { CreateUserDto, RegisterUserDTO } from './dto/create-user.dto';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { IUser } from './schemas/user.interface';
 import aqp from 'api-query-params';
+import { Role, RoleDocument } from 'src/roles/schema/role.schema';
+import { USER_ROLE } from 'src/databases/sample';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     @InjectModel(User.name)
-    private userModel: SoftDeleteModel<UserDocument>
+    private userModel: SoftDeleteModel<UserDocument>,
+    @InjectModel(Role.name)
+    private roleModel: SoftDeleteModel<RoleDocument>,
   ) { }
 
   getHashPassword = (password: string) => {
@@ -42,8 +46,12 @@ export class UsersService {
       throw new BadRequestException("Email already exists!")
     }
     //
+
+    //fetch user role
+    const userRole = await this.roleModel.findOne({ name: USER_ROLE })
+
     const hashPassword = this.getHashPassword(registerUserDTO.password)
-    const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: 'USER' })
+    const newUser = await this.userModel.create({ ...registerUserDTO, password: hashPassword, role: userRole._id })
     return newUser
   }
 
@@ -83,7 +91,7 @@ export class UsersService {
   findOneByUsername(username: string) {
     return this.userModel.findOne({
       email: username
-    }).populate({ path: 'role', select: { name: 1, permission: 1 } })
+    }).populate({ path: 'role', select: { name: 1 } })
   }
 
   isValidPassword(password: string, hash: string) {
@@ -111,7 +119,10 @@ export class UsersService {
   }
 
   async findUserByRefreshToken(refreshToken: string) {
-    const user = await this.userModel.findOne({ refreshToken })
+    const user = (await this.userModel.findOne({ refreshToken })).populate({
+      path: 'role',
+      select: { name: 1 }
+    })
     return user
   }
 }

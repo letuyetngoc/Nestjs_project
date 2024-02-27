@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { IS_PUBLIC_KEY } from 'src/decorator/customize';
+import { IS_PUBLIC_KEY, IS_PUBLIC_PERMISSION } from 'src/decorator/customize';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -28,22 +28,27 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     handleRequest(err, user, info, context: ExecutionContext) {
         const request: Request = context.switchToHttp().getRequest();
 
+        const isSkipPermission = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_PERMISSION, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+
         if (err || !user) {
             throw err || new UnauthorizedException("Token không hợp lệ hoặc không có token ở header request!");
         }
 
         //check permission
-        // const targetMethod = request.method;
-        // const targetEndpoint = request.route?.path as string;
+        const targetMethod = request.method;
+        const targetEndpoint = request.route?.path as string;
 
-        // const permissions = user?.permissions ?? []
-        // let isExist = permissions.find(permission => (targetMethod === permission.method && targetEndpoint === permission.apiPath))
-        // console.log(targetEndpoint)
-        // if(targetEndpoint.startsWith('/api/v1/auth')) isExist = true
+        const permissions = user?.permissions ?? []
+        let isExist = permissions.find(permission => (targetMethod === permission.method && targetEndpoint === permission.apiPath))
+        console.log(targetEndpoint)
+        if(targetEndpoint.startsWith('/api/v1/auth')) isExist = true
 
-        // if (!isExist) {
-        //     throw new ForbiddenException('Bạn không có quyền truy cập endpoint này!')
-        // }
+        if (!isExist && !isSkipPermission) {
+            throw new ForbiddenException('Bạn không có quyền truy cập endpoint này!')
+        }
         return user
     }
 }

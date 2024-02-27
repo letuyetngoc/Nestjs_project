@@ -35,12 +35,12 @@ export class SubscribersService {
   }
 
   //update a subscriber
-  async update(updateSubscriberDto: UpdateSubscriberDto, user: IUser, id: string) {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('not found subscriber')
-    }
-    
-    return this.subscriberModel.updateOne({ ...updateSubscriberDto, updatedBy: { _id: user._id, email: user.email } })
+  async update(updateSubscriberDto: UpdateSubscriberDto, user: IUser) {
+    return await this.subscriberModel.updateOne({ email: user.email },
+      {
+        ...updateSubscriberDto, updatedBy: { _id: user._id, email: user.email },
+        upsert: true
+      })
   }
 
   //Fetch Roles with paginate
@@ -89,5 +89,10 @@ export class SubscribersService {
     }
     await this.subscriberModel.updateOne({ _id: id }, { deletedBy: { _id: user._id, email: user.email } })
     return this.subscriberModel.softDelete({ _id: id })
+  }
+
+  //get user'skills
+  async getSkills(user: IUser) {
+    return await this.subscriberModel.findOne({ emai: user.email }, { skills: 1 })
   }
 }

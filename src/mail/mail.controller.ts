@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Subscriber, SubscriberDocument } from 'src/subscribers/schema/subscriber.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { Job, JobDocument } from 'src/jobs/schemas/jobs.schema';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('mail')
 export class MailController {
@@ -21,6 +22,7 @@ export class MailController {
 
   @Get()
   @Public()
+  @Cron('0 0 0 * * 0') //0.00am every sunday
   @ResponseMessage("Test email")
   async handleTestEmail() {
 
